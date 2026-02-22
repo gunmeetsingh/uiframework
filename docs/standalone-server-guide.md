@@ -34,8 +34,8 @@ mysql -u <user> -p oam_portal < db/init.sql
 3.  **Configure**: Edit `docker-compose.yml` on the server and ensure the `image:` property points to your repository.
 4.  **Launch**:
     ```bash
-    docker-compose pull
-    docker-compose up -d
+    docker compose pull
+    docker compose up -d
     ```
 
 ### Path B: Manual Build (Package-Driven)
@@ -51,7 +51,7 @@ mysql -u <user> -p oam_portal < db/init.sql
 3.  **Configure**: Edit `docker-compose.yml` and uncomment the `build:` section, while commenting out the `image:` property.
 4.  **Launch**:
     ```bash
-    docker-compose up -d --build
+    docker compose up -d --build
     ```
 
 ---

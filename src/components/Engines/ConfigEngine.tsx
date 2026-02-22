@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from 'react';
-import { Form, Input, Button, Select, Checkbox, DatePicker, Table, Space, Popconfirm, message, Card } from 'antd';
+import { Form, Input, Button, Select, Checkbox, DatePicker, Table, Space, Popconfirm, message, Card, Tag } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined, LeftOutlined } from '@ant-design/icons';
 import { brandingConfig } from '@/branding.config';
 import dayjs from 'dayjs';
@@ -14,25 +14,35 @@ interface Option {
 interface FieldSchema {
     name: string;
     label: string;
-    type: 'text' | 'number' | 'select' | 'checkbox' | 'date';
+    type: 'text' | 'number' | 'email' | 'select' | 'multi-select' | 'checkbox' | 'date';
     options?: Option[];
     required?: boolean;
-    showInList?: boolean; // New: control visibility in table
+    showInList?: boolean;
 }
 
 interface ConfigSchema {
     title: string;
     endpoint?: string;
+    permissions?: {
+        create?: string;
+        update?: string;
+        delete?: string;
+    };
     fields: FieldSchema[];
 }
 
-export const ConfigEngine = ({ schema }: { schema: ConfigSchema }) => {
+export const ConfigEngine = ({ schema, initialData = [] }: { schema: ConfigSchema, initialData?: any[] }) => {
+    const permissions = schema.permissions || {
+        create: 'node:create',
+        update: 'node:update',
+        delete: 'node:delete'
+    };
+
     // Mode state: 'list' or 'form'
     const [mode, setMode] = useState<'list' | 'form'>('list');
 
     // Data state for the list view
-    // Initialize with some dummy data if empty, for demonstration
-    const [data, setData] = useState<any[]>([
+    const [data, setData] = useState<any[]>(initialData.length > 0 ? initialData : [
         { id: '1', nodeName: 'Node-Alpha', ipAddress: '192.168.1.10', nodeType: 'router', isActive: true, deploymentDate: '2023-01-15' },
         { id: '2', nodeName: 'Switch-Beta', ipAddress: '192.168.1.20', nodeType: 'switch', isActive: true, deploymentDate: '2023-02-20' },
     ]);
@@ -122,7 +132,17 @@ export const ConfigEngine = ({ schema }: { schema: ConfigSchema }) => {
                     key: field.name,
                     render: (text: any) => {
                         if (field.type === 'checkbox') return text ? 'Yes' : 'No';
-                        if (field.type === 'select' && field.options) {
+                        if ((field.type === 'select' || field.type === 'multi-select') && field.options) {
+                            if (Array.isArray(text)) {
+                                return (
+                                    <Space size={[0, 4]} wrap>
+                                        {text.map(val => {
+                                            const opt = field.options?.find(o => o.value === val);
+                                            return <Tag color="blue" key={val}>{opt ? opt.label : val}</Tag>;
+                                        })}
+                                    </Space>
+                                );
+                            }
                             const opt = field.options.find(o => o.value === text);
                             return opt ? opt.label : text;
                         }
@@ -150,7 +170,7 @@ export const ConfigEngine = ({ schema }: { schema: ConfigSchema }) => {
             width: 150,
             render: (_: any, record: any) => (
                 <Space>
-                    <Guard permission="node:update">
+                    <Guard permission={permissions.update!}>
                         <Button
                             type="text"
                             icon={<EditOutlined />}
@@ -158,7 +178,7 @@ export const ConfigEngine = ({ schema }: { schema: ConfigSchema }) => {
                             style={{ color: brandingConfig.theme.primaryColor }}
                         />
                     </Guard>
-                    <Guard permission="node:delete">
+                    <Guard permission={permissions.delete!}>
                         <Popconfirm title="Are you sure?" onConfirm={() => handleDelete(record.id)}>
                             <Button type="text" danger icon={<DeleteOutlined />} />
                         </Popconfirm>
@@ -180,13 +200,13 @@ export const ConfigEngine = ({ schema }: { schema: ConfigSchema }) => {
                 extra={
                     <Space>
                         {selectedRowKeys.length > 0 && (
-                            <Guard permission="node:delete">
+                            <Guard permission={permissions.delete!}>
                                 <Button danger onClick={handleBulkDelete}>
                                     Delete Selected ({selectedRowKeys.length})
                                 </Button>
                             </Guard>
                         )}
-                        <Guard permission="node:create">
+                        <Guard permission={permissions.create!}>
                             <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
                                 Add New
                             </Button>
@@ -235,9 +255,17 @@ export const ConfigEngine = ({ schema }: { schema: ConfigSchema }) => {
                         rules={[{ required: field.required, message: `${field.label} is required` }]}
                     >
                         {field.type === 'text' && <Input />}
+                        {field.type === 'email' && <Input type="email" />}
                         {field.type === 'number' && <Input type="number" />}
                         {field.type === 'select' && (
                             <Select>
+                                {field.options?.map(opt => (
+                                    <Select.Option key={opt.value} value={opt.value}>{opt.label}</Select.Option>
+                                ))}
+                            </Select>
+                        )}
+                        {field.type === 'multi-select' && (
+                            <Select mode="multiple">
                                 {field.options?.map(opt => (
                                     <Select.Option key={opt.value} value={opt.value}>{opt.label}</Select.Option>
                                 ))}

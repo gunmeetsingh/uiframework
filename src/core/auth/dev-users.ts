@@ -6,7 +6,7 @@ export const DEV_USERS = [
         name: "Dev Admin",
         email: "admin@example.com",
         role: "admin",
-        permissions: ["grafana", "node:create", "node:update", "node:delete", "node:read"]
+        permissions: ["dashboard:read", "report:telecom:read", "node:read", "node:update", "node:delete", "user:manage", "grafana"]
     },
     {
         id: "2",
@@ -15,6 +15,6 @@ export const DEV_USERS = [
         name: "Dev Viewer",
         email: "viewer@example.com",
         role: "viewer",
-        permissions: ["grafana", "node:read", "node:update"]
+        permissions: ["dashboard:read", "node:read"]
     }
 ];

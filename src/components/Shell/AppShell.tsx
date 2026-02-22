@@ -16,6 +16,8 @@ import { useRouter, usePathname } from "next/navigation";
 
 import { TenantProvider } from "@/context/TenantContext";
 import { TenantSwitcher } from "./TenantSwitcher";
+import { MODULE_REGISTRY, CATEGORIES } from "@/config/modules";
+
 
 const { Header, Sider, Content } = Layout;
 
@@ -33,40 +35,37 @@ const AppShellContent = ({ children }: { children: React.ReactNode }) => {
     const router = useRouter();
     const pathname = usePathname();
 
-    const menuItems = [
-        {
-            key: "/dashboard",
-            icon: <DashboardOutlined />,
-            label: "Dashboard",
-        },
-        {
-            key: "/reports",
-            icon: <BarChartOutlined />,
-            label: "Reports",
-            children: [
-                { key: "/reports/kpi", label: "Telecom KPI" },
-            ],
-        },
-        {
-            key: "/configuration",
-            icon: <SettingOutlined />,
-            label: "Configuration",
-            children: [
-                { key: "/configuration/nodes", label: "Network Nodes" },
-            ],
-        },
-    ];
+    const menuItems: any[] = CATEGORIES.map((category: any) => {
+        const children = MODULE_REGISTRY
+            .filter(module => module.category === category.id && user?.permissions?.includes(module.permission))
+            .map(module => ({
+                key: module.path,
+                label: module.title
+            }));
 
-    if (user?.permissions?.includes('grafana')) {
-        menuItems.push({
-            key: "/monitor",
-            icon: <span role="img" aria-label="monitor" className="anticon"><svg viewBox="0 0 1024 1024" width="1em" height="1em" fill="currentColor"><path d="M928 224H96c-17.7 0-32 14.3-32 32v576c0 17.7 14.3 32 32 32h832c17.7 0 32-14.3 32-32V256c0-17.7-14.3-32-32-32zm-40 568H136V296h752v496zM304 480c0-4.4 3.6-8 8-8h400c4.4 0 8 3.6 8 8v48c0 4.4-3.6 8-8 8H312c-4.4 0-8-3.6-8-8v-48zm0 136c0-4.4 3.6-8 8-8h280c4.4 0 8 3.6 8 8v48c0 4.4-3.6 8-8 8H312c-4.4 0-8-3.6-8-8v-48z" /></svg></span>,
-            label: "Monitor Platform",
-            children: [
-                { key: "/monitor/grafana", label: "Grafana" },
-            ]
-        } as any);
-    }
+        if (children.length === 0) return null;
+
+        return {
+            key: category.id,
+            icon: category.icon,
+            label: category.title,
+            children: children.length > 1 || (category.id !== 'Dashboard' && category.id !== 'Monitor' && category.id !== 'User Management') ? children : undefined,
+        };
+
+    }).filter(Boolean);
+
+    // Adjust categories with single child to be top-level
+    menuItems.forEach((item: any) => {
+        if (!item.children || item.children.length === 0) {
+            // Check if it's a single page category like Monitor or Dashboard
+            const modules = MODULE_REGISTRY.filter(m => m.category === item.key && user?.permissions?.includes(m.permission));
+            if (modules.length === 1) {
+                item.key = modules[0].path;
+            }
+        }
+    });
+
+
 
     const userMenuItems = [
         {
@@ -153,8 +152,21 @@ const AppShellContent = ({ children }: { children: React.ReactNode }) => {
                         color: brandingConfig.theme.textColor
                     }}
                 >
-                    {children}
+                    {(() => {
+                        const currentModule = MODULE_REGISTRY.find(m => pathname.startsWith(m.path));
+                        if (currentModule && !user?.permissions?.includes(currentModule.permission)) {
+                            return (
+                                <div style={{ textAlign: 'center', padding: '100px 0' }}>
+                                    <h2 style={{ color: brandingConfig.theme.primaryColor }}>Access Denied</h2>
+                                    <p>You do not have permission to access the "{currentModule.title}" module.</p>
+                                    <Button type="primary" onClick={() => router.push('/dashboard')}>Back to Dashboard</Button>
+                                </div>
+                            );
+                        }
+                        return children;
+                    })()}
                 </Content>
+
             </Layout>
         </Layout>
     );

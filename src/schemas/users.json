@@ -1,0 +1,98 @@
+{
+    "module": "User Management",
+    "endpoint": "/api/users",
+    "fields": [
+        {
+            "name": "username",
+            "label": "Username",
+            "type": "text",
+            "required": true,
+            "editable": false
+        },
+        {
+            "name": "name",
+            "label": "Full Name",
+            "type": "text",
+            "required": true,
+            "editable": true
+        },
+        {
+            "name": "email",
+            "label": "Email",
+            "type": "email",
+            "required": true,
+            "editable": true
+        },
+        {
+            "name": "role",
+            "label": "System Role",
+            "type": "select",
+            "options": [
+                {
+                    "label": "Admin",
+                    "value": "admin"
+                },
+                {
+                    "label": "Viewer",
+                    "value": "viewer"
+                }
+            ],
+            "required": true,
+            "editable": true
+        },
+        {
+            "name": "tenants",
+            "label": "Allowed Tenants",
+            "type": "multi-select",
+            "options": [
+                {
+                    "label": "Acme Corp",
+                    "value": "acme"
+                },
+                {
+                    "label": "Globex Inc",
+                    "value": "globex"
+                },
+                {
+                    "label": "Umbrella Corp",
+                    "value": "umbrella"
+                }
+            ],
+            "required": true,
+            "editable": true
+        },
+        {
+            "name": "permissions",
+            "label": "Granular Permissions",
+            "type": "multi-select",
+            "options": [
+                {
+                    "label": "Manage Users",
+                    "value": "user:manage"
+                },
+                {
+                    "label": "Create Nodes",
+                    "value": "node:create"
+                },
+                {
+                    "label": "Update Nodes",
+                    "value": "node:update"
+                },
+                {
+                    "label": "Delete Nodes",
+                    "value": "node:delete"
+                },
+                {
+                    "label": "Read Nodes",
+                    "value": "node:read"
+                },
+                {
+                    "label": "Access Grafana",
+                    "value": "grafana"
+                }
+            ],
+            "required": false,
+            "editable": true
+        }
+    ]
+}

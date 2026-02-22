@@ -27,6 +27,17 @@ export const ReportEngine = ({ schema }: ReportProps) => {
             text: schema.title,
             textStyle: { color: brandingConfig.theme.textColor }
         },
+        toolbox: {
+            feature: {
+                saveAsImage: { title: 'Save as Image' },
+                dataView: { title: 'Data View', readOnly: false },
+                restore: { title: 'Restore' }
+            },
+            iconStyle: {
+                borderColor: brandingConfig.theme.textColor
+            },
+            right: 20
+        },
         backgroundColor: 'transparent',
         tooltip: {
             trigger: 'axis',

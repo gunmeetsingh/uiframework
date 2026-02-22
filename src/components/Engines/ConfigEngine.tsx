@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Form, Input, Button, Select, Checkbox, DatePicker, Table, Space, Popconfirm, message, Card, Tag } from 'antd';
 import { EditOutlined, DeleteOutlined, PlusOutlined, LeftOutlined } from '@ant-design/icons';
+import * as Icons from '@ant-design/icons';
 import { brandingConfig } from '@/branding.config';
 import dayjs from 'dayjs';
 import { Guard } from '@/components/Access/Guard';
@@ -113,6 +114,29 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: ConfigSchem
 
     // -- Render Helpers --
 
+    const downloadCSV = () => {
+        if (!data || data.length === 0) return;
+
+        const headers = schema.fields.map(f => f.label).join(',');
+        const rows = data.map(item => {
+            return schema.fields.map(f => {
+                const val = item[f.name];
+                return typeof val === 'string' ? `"${val.replace(/"/g, '""')}"` : val;
+            }).join(',');
+        });
+
+        const csvContent = [headers, ...rows].join('\n');
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `${schema.title}.csv`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     const columns = [
         ...schema.fields
             .map((field, index) => {
@@ -199,6 +223,9 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: ConfigSchem
                 title={schema.title}
                 extra={
                     <Space>
+                        <Button icon={<Icons.DownloadOutlined />} onClick={downloadCSV}>
+                            Export CSV
+                        </Button>
                         {selectedRowKeys.length > 0 && (
                             <Guard permission={permissions.delete!}>
                                 <Button danger onClick={handleBulkDelete}>

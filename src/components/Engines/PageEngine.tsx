@@ -117,6 +117,18 @@ const ChartRenderer = ({ widget, filters }: WidgetRendererProps<ChartWidget>) =>
             text: widget.title + titleSuffix,
             textStyle: { color: brandingConfig.theme.textColor }
         },
+        toolbox: {
+            feature: {
+                saveAsImage: { title: 'Save Image' },
+                dataView: { title: 'Data View', readOnly: false },
+                restore: { title: 'Restore' }
+            },
+            iconStyle: {
+                borderColor: brandingConfig.theme.textColor
+            },
+            right: 10,
+            top: 0
+        },
         backgroundColor: 'transparent',
         tooltip: {
             trigger: 'axis',
@@ -153,6 +165,29 @@ const ChartRenderer = ({ widget, filters }: WidgetRendererProps<ChartWidget>) =>
     );
 };
 
+const downloadCSV = (data: any[], columns: { title: string; dataIndex: string }[], filename: string) => {
+    if (!data || data.length === 0) return;
+
+    const headers = columns.map(col => col.title).join(',');
+    const rows = data.map(item => {
+        return columns.map(col => {
+            const val = item[col.dataIndex];
+            return typeof val === 'string' ? `"${val.replace(/"/g, '""')}"` : val;
+        }).join(',');
+    });
+
+    const csvContent = [headers, ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `${filename}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+};
+
 const TableRenderer = ({ widget, filters }: WidgetRendererProps<TableWidget>) => {
     // Process columns to add sorting and filtering
     const processedColumns = widget.columns.map((col, index) => {
@@ -181,7 +216,17 @@ const TableRenderer = ({ widget, filters }: WidgetRendererProps<TableWidget>) =>
     });
 
     return (
-        <Card title={<span style={{ color: brandingConfig.theme.textColor }}>{widget.title}</span>} bordered={false} style={{ background: brandingConfig.theme.componentBg }}>
+        <Card
+            title={<span style={{ color: brandingConfig.theme.textColor }}>{widget.title}</span>}
+            bordered={false}
+            style={{ background: brandingConfig.theme.componentBg }}
+            extra={
+                <Icons.DownloadOutlined
+                    style={{ color: brandingConfig.theme.primaryColor, cursor: 'pointer', fontSize: 18 }}
+                    onClick={() => downloadCSV(widget.data, widget.columns, widget.title || 'export')}
+                />
+            }
+        >
             <Table
                 columns={processedColumns}
                 dataSource={widget.data}

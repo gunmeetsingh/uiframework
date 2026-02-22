@@ -1,0 +1,48 @@
+{
+    "title": "Configure Network Node",
+    "endpoint": "/api/nodes",
+    "fields": [
+        {
+            "name": "nodeName",
+            "label": "Node Name",
+            "type": "text",
+            "required": true
+        },
+        {
+            "name": "ipAddress",
+            "label": "IP Address",
+            "type": "text",
+            "required": true
+        },
+        {
+            "name": "nodeType",
+            "label": "Node Type",
+            "type": "select",
+            "options": [
+                {
+                    "label": "Router",
+                    "value": "router"
+                },
+                {
+                    "label": "Switch",
+                    "value": "switch"
+                },
+                {
+                    "label": "Firewall",
+                    "value": "firewall"
+                }
+            ],
+            "required": true
+        },
+        {
+            "name": "isActive",
+            "label": "Active",
+            "type": "checkbox"
+        },
+        {
+            "name": "deploymentDate",
+            "label": "Deployment Date",
+            "type": "date"
+        }
+    ]
+}

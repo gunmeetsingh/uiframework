@@ -1,66 +1,40 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+import { Button, Card, Input, Form } from 'antd';
+import { useAuth } from '@/core/auth/AuthProvider';
+import { brandingConfig } from '@/branding.config';
 
-export default function Home() {
+export default function LoginPage() {
+  const { login } = useAuth();
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.tsx file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div style={{
+      height: '100vh',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundImage: `url('/login-bg.webp')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+    }}>
+      <Card style={{ width: 400 }}>
+        <div style={{ textAlign: 'center', marginBottom: 24 }}>
+          <h1 style={{ color: brandingConfig.theme.primaryColor }}>{brandingConfig.appName}</h1>
+          <p>Login to access the portal</p>
         </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+        <Form layout="vertical" onFinish={login}>
+          <Form.Item label="Username" name="username" initialValue="admin">
+            <Input />
+          </Form.Item>
+          <Form.Item label="Password" name="password" initialValue="admin">
+            <Input.Password />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" block>
+              Login
+            </Button>
+          </Form.Item>
+        </Form>
+      </Card>
     </div>
   );
 }

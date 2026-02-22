@@ -1,0 +1,61 @@
+{
+    "title": "Dashboard",
+    "filters": [
+        {
+            "key": "dateRange",
+            "type": "dateRange",
+            "label": "Date Range",
+            "defaultValue": "yesterday"
+        }
+    ],
+    "rows": [
+        {
+            "gutter": 16,
+            "columns": [
+                {
+                    "span": 8,
+                    "widget": {
+                        "type": "statistic",
+                        "title": "Active Nodes",
+                        "value": 112,
+                        "prefixIcon": "HddFilled"
+                    }
+                },
+                {
+                    "span": 8,
+                    "widget": {
+                        "type": "statistic",
+                        "title": "Network Uptime",
+                        "value": 99.9,
+                        "precision": 2,
+                        "suffix": "%",
+                        "prefixIcon": "WifiOutlined",
+                        "color": "#3f8600"
+                    }
+                },
+                {
+                    "span": 8,
+                    "widget": {
+                        "type": "statistic",
+                        "title": "Active Users",
+                        "value": 5,
+                        "prefixIcon": "UserOutlined"
+                    }
+                }
+            ]
+        },
+        {
+            "gutter": 16,
+            "columns": [
+                {
+                    "span": 24,
+                    "widget": {
+                        "type": "text",
+                        "title": "System Status",
+                        "content": "All systems operational."
+                    }
+                }
+            ]
+        }
+    ]
+}

@@ -158,7 +158,7 @@ const AppShellContent = ({ children }: { children: React.ReactNode }) => {
                             return (
                                 <div style={{ textAlign: 'center', padding: '100px 0' }}>
                                     <h2 style={{ color: brandingConfig.theme.primaryColor }}>Access Denied</h2>
-                                    <p>You do not have permission to access the "{currentModule.title}" module.</p>
+                                    <p>You do not have permission to access the &quot;{currentModule.title}&quot; module.</p>
                                     <Button type="primary" onClick={() => router.push('/dashboard')}>Back to Dashboard</Button>
                                 </div>
                             );

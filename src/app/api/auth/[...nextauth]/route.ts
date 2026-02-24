@@ -2,6 +2,7 @@ import NextAuth, { NextAuthOptions } from "next-auth";
 import KeycloakProvider from "next-auth/providers/keycloak";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { DEV_USERS } from "@/core/auth/dev-users";
+import { AuditLogger } from "@/core/utils/audit-logger";
 
 export const authOptions: NextAuthOptions = {
     providers: [
@@ -69,6 +70,23 @@ export const authOptions: NextAuthOptions = {
             }
             return session;
         }
+    },
+    events: {
+        async signIn({ user, account }) {
+            await AuditLogger.log({
+                username: user.email || (user as any).username || user.name || 'unknown',
+                action: 'Login',
+                status: 'Success',
+                details: `Logged in via ${account?.provider}`
+            });
+        },
+        async signOut({ token }) {
+            await AuditLogger.log({
+                username: token.email || (token as any).username || (token as any).name || 'unknown',
+                action: 'Logout',
+                status: 'Success'
+            });
+        },
     },
     pages: {
         signIn: '/', // Custom login page

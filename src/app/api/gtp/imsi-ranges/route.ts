@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/route";
 
 import { dbManager } from "@/core/db/manager";
+import { AuditLogger } from "@/core/utils/audit-logger";
 
 // Mock data matching the user's table structure
 let mockImsiRanges = [
@@ -68,6 +69,15 @@ export async function POST(req: NextRequest) {
                 `INSERT INTO ${schema.tableName} (imsirange_name, from_imsi, to_imsi) VALUES (?, ?, ?)`,
                 [data.imsirange_name, data.from_imsi, data.to_imsi]
             );
+
+            await AuditLogger.log({
+                username: (session.user as any).email || (session.user as any).name,
+                screen: schema.title,
+                action: 'Data Insert',
+                status: 'Success',
+                details: `Inserted IMSI Range: ${data.imsirange_name}. Query: INSERT INTO ${schema.tableName} (imsirange_name, from_imsi, to_imsi) VALUES ('${data.imsirange_name}', '${data.from_imsi}', '${data.to_imsi}')`
+            });
+
             return NextResponse.json(data, { status: 201 });
         }
     } catch (error) {
@@ -107,6 +117,14 @@ export async function PUT(req: NextRequest) {
             const sql = `UPDATE ${schema.tableName} SET ${setClause} WHERE ${whereClause}`;
             await pool.execute(sql, [...setValues, ...whereValues] as any[]);
 
+            await AuditLogger.log({
+                username: (session.user as any).email || (session.user as any).name,
+                screen: schema.title,
+                action: 'Data Update',
+                status: 'Success',
+                details: `Updated record. SQL: ${sql} | Values: ${JSON.stringify([...setValues, ...whereValues])}`
+            });
+
             return NextResponse.json({ success: true, data });
         }
     } catch (error) {
@@ -137,6 +155,14 @@ export async function DELETE(req: NextRequest) {
 
             const sql = `DELETE FROM ${schema.tableName} WHERE ${whereClause}`;
             await pool.execute(sql, whereValues as any[]);
+
+            await AuditLogger.log({
+                username: (session.user as any).email || (session.user as any).name,
+                screen: schema.title,
+                action: 'Data Delete',
+                status: 'Success',
+                details: `Deleted record. WHERE ${whereClause} | Values: ${JSON.stringify(whereValues)}`
+            });
 
             return NextResponse.json({ success: true });
         }

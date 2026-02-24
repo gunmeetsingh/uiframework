@@ -3,7 +3,8 @@ import {
     BarChartOutlined,
     SettingOutlined,
     GlobalOutlined,
-    TeamOutlined
+    TeamOutlined,
+    HistoryOutlined
 } from '@ant-design/icons';
 import React from 'react';
 
@@ -11,7 +12,7 @@ export interface ModuleDefinition {
     id: string;
     title: string;
     path: string;
-    category: 'Dashboard' | 'Reports' | 'Configuration' | 'Monitor' | 'User Management';
+    category: 'Dashboard' | 'Reports' | 'Configuration' | 'Monitor' | 'User Management' | 'Audit Trail';
     icon?: React.ReactNode;
     permission: string;
     schema?: string;
@@ -82,6 +83,15 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
         dbPool: 'CORE'
     },
     {
+        id: 'audit-trail',
+        title: 'Audit Trail',
+        path: '/admin/audit-trail',
+        category: 'Audit Trail',
+        permission: 'user:manage',
+        schema: '/schemas/audit-trail.json',
+        dbPool: 'CORE'
+    },
+    {
         id: 'grafana',
         title: 'Grafana',
         path: '/monitor/grafana',
@@ -95,6 +105,7 @@ export const CATEGORIES = [
     { id: 'Reports', title: 'Reports', icon: React.createElement(BarChartOutlined) },
     { id: 'Configuration', title: 'Configuration', icon: React.createElement(SettingOutlined) },
     { id: 'User Management', title: 'User Management', icon: React.createElement(TeamOutlined) },
+    { id: 'Audit Trail', title: 'Audit Trail', icon: React.createElement(HistoryOutlined) },
     { id: 'Monitor', title: 'Monitor Platform', icon: React.createElement(GlobalOutlined) }
 ];
 

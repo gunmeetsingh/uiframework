@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import { dbManager } from "@/core/db/manager";
+import { AuditLogger } from "@/core/utils/audit-logger";
 import schemaRaw from "@/schemas/gtp-session-mgmt.json";
 const schema = schemaRaw as any;
 
@@ -58,6 +59,13 @@ export async function POST(req: NextRequest) {
                     data.imsirange_name
                 ]
             );
+            await AuditLogger.log({
+                username: (session.user as any).email || (session.user as any).name,
+                screen: schema.title,
+                action: 'Data Insert',
+                status: 'Success',
+                details: `Inserted Session record: ${data.home_nw_mccmnc}. Params: ${JSON.stringify(data)}`
+            });
             return NextResponse.json(data, { status: 201 });
         }
     } catch (error) {
@@ -89,6 +97,13 @@ export async function PUT(req: NextRequest) {
 
             const sql = `UPDATE ${schema.tableName} SET ${setClause} WHERE ${whereClause}`;
             await pool.execute(sql, [...setValues, ...whereValues] as any[]);
+            await AuditLogger.log({
+                username: (session.user as any).email || (session.user as any).name,
+                screen: schema.title,
+                action: 'Data Update',
+                status: 'Success',
+                details: `Updated record. SQL: ${sql} | Values: ${JSON.stringify([...setValues, ...whereValues])}`
+            });
             return NextResponse.json({ success: true, data });
         }
     } catch (error) {
@@ -117,6 +132,13 @@ export async function DELETE(req: NextRequest) {
 
             const sql = `DELETE FROM ${schema.tableName} WHERE ${whereClause}`;
             await pool.execute(sql, whereValues as any[]);
+            await AuditLogger.log({
+                username: (session.user as any).email || (session.user as any).name,
+                screen: schema.title,
+                action: 'Data Delete',
+                status: 'Success',
+                details: `Deleted record. WHERE ${whereClause} | Values: ${JSON.stringify(whereValues)}`
+            });
             return NextResponse.json({ success: true });
         }
     } catch (error) {

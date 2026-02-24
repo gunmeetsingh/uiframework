@@ -1,0 +1,86 @@
+{
+    "title": "Audit Trail",
+    "permission": "user:manage",
+    "dbPool": "CORE",
+    "tableName": "audit_logs",
+    "fields": [
+        {
+            "name": "timestamp",
+            "label": "Date & Time",
+            "type": "date",
+            "showInList": true
+        },
+        {
+            "name": "username",
+            "label": "User",
+            "type": "text",
+            "showInList": true
+        },
+        {
+            "name": "ip_address",
+            "label": "IP Address",
+            "type": "text",
+            "showInList": true
+        },
+        {
+            "name": "screen",
+            "label": "Screen",
+            "type": "text",
+            "showInList": true
+        },
+        {
+            "name": "action",
+            "label": "Action",
+            "type": "select",
+            "showInList": true,
+            "options": [
+                {
+                    "label": "Login",
+                    "value": "Login"
+                },
+                {
+                    "label": "Logout",
+                    "value": "Logout"
+                },
+                {
+                    "label": "Data Insert",
+                    "value": "Data Insert"
+                },
+                {
+                    "label": "Data Update",
+                    "value": "Data Update"
+                },
+                {
+                    "label": "Data Delete",
+                    "value": "Data Delete"
+                },
+                {
+                    "label": "Login Failed",
+                    "value": "Login Failed"
+                }
+            ]
+        },
+        {
+            "name": "status",
+            "label": "Status",
+            "type": "select",
+            "showInList": true,
+            "options": [
+                {
+                    "label": "Success",
+                    "value": "Success"
+                },
+                {
+                    "label": "Fail",
+                    "value": "Fail"
+                }
+            ]
+        },
+        {
+            "name": "details",
+            "label": "Details (Query/Info)",
+            "type": "text",
+            "showInList": true
+        }
+    ]
+}

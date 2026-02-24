@@ -44,6 +44,19 @@ CREATE TABLE IF NOT EXISTS network_nodes (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 5. Audit Trail Table
+-- Capture all user activity for security and compliance
+CREATE TABLE IF NOT EXISTS audit_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    username VARCHAR(255) NOT NULL,
+    ip_address VARCHAR(45),
+    screen VARCHAR(255),
+    action VARCHAR(50) NOT NULL,
+    details TEXT,
+    status VARCHAR(50) NOT NULL
+);
+
 -- Initial Data (Optional - Seed Admin)
 -- INSERT INTO users (id, username, name, email, role) VALUES ('1', 'admin', 'Dev Admin', 'admin@example.com', 'admin');
 -- INSERT INTO user_permissions (user_id, permission) VALUES ('1', 'user:manage'), ('1', 'dashboard:read'), ('1', 'node:read');

@@ -8,19 +8,20 @@ services:
     #   dockerfile: Dockerfile
 
     # Option 2: Registry Pull (Recommended - No source code package needed)
-    image: ghcr.io/<your-username>/uiframework:main
+    image: ghcr.io/gunmeetsingh/uiframework:main
 
     container_name: oam-portal
     ports:
       - "3000:3000"
     environment:
-      - DATABASE_URL=mysql://user:pass@mysql-endpoint:3306/oam_portal
+      - CORE_DB_URL=mysql://root:gtp_root_pass@127.0.0.1:3307/oam_portal
+      - GTP_PROXY_DB_URL=mysql://root:gtp_root_pass@127.0.0.1:3307/gtp_proxy
       - AUTH_MODE=local # Change to keycloak once logic is ready
-      - NEXTAUTH_URL=http://server-ip:3000
+      - NEXTAUTH_URL=http://207.180.220.203:3000
       - NEXTAUTH_SECRET=p3rs1st3nt_s3cr3t_f0r_prod
       - KEYCLOAK_ID=nextjs-app
       - KEYCLOAK_SECRET=dummy-secret
-      - KEYCLOAK_ISSUER=http://server-ip:8080/realms/spartified
+      - KEYCLOAK_ISSUER=http://207.180.220.203:8080/realms/spartified
     depends_on:
       - keycloak
     restart: always
@@ -33,10 +34,10 @@ services:
       - "8080:8080"
     environment:
       - KC_DB=mysql
-      - KC_DB_URL=jdbc:mysql://mysql-endpoint:3306/keycloak
-      - KC_DB_USERNAME=user
-      - KC_DB_PASSWORD=pass
-      - KC_HOSTNAME=server-ip
+      - KC_DB_URL=jdbc:mysql://127.0.0.1:3307/keycloak
+      - KC_DB_USERNAME=root
+      - KC_DB_PASSWORD=gtp_root_pass
+      - KC_HOSTNAME=207.180.220.203
       - KEYCLOAK_ADMIN=admin
       - KEYCLOAK_ADMIN_PASSWORD=admin
     restart: always

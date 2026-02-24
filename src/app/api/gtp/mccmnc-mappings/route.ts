@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import { dbManager } from "@/core/db/manager";
+import schema from "@/schemas/gtp-mccmnc-mapping.json";
 
 export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions);
@@ -10,9 +11,12 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        if (process.env.GTP_PROXY_DB_URL) {
-            const pool = await dbManager.getPool('GTP_PROXY', process.env.GTP_PROXY_DB_URL);
-            const [rows] = await pool.execute('SELECT * FROM gtp_mccmnc_mappings');
+        const poolName = schema.dbPool;
+        const connectionString = (process.env as any)[`${poolName}_DB_URL`];
+
+        if (connectionString) {
+            const pool = await dbManager.getPool(poolName, connectionString);
+            const [rows] = await pool.execute(`SELECT * FROM ${schema.tableName}`);
             return NextResponse.json(rows);
         }
     } catch (error) {
@@ -34,10 +38,13 @@ export async function POST(req: NextRequest) {
     const data = await req.json();
 
     try {
-        if (process.env.GTP_PROXY_DB_URL) {
-            const pool = await dbManager.getPool('GTP_PROXY', process.env.GTP_PROXY_DB_URL);
+        const poolName = schema.dbPool;
+        const connectionString = (process.env as any)[`${poolName}_DB_URL`];
+
+        if (connectionString) {
+            const pool = await dbManager.getPool(poolName, connectionString);
             await pool.execute(
-                'INSERT INTO gtp_mccmnc_mappings (network_name, mcc, mnc, mnc_touse_for_handling) VALUES (?, ?, ?, ?)',
+                `INSERT INTO ${schema.tableName} (network_name, mcc, mnc, mnc_touse_for_handling) VALUES (?, ?, ?, ?)`,
                 [data.network_name, data.mcc, data.mnc, data.mnc_touse_for_handling]
             );
             return NextResponse.json(data, { status: 201 });

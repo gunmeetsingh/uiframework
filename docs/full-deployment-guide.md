@@ -83,13 +83,28 @@ docker push <aws-id>.dkr.ecr.<region>.amazonaws.com/oam-portal:prod
 
 ### ECS Task Configuration
 Inject the following secrets from **AWS Secrets Manager**:
-*   `DATABASE_URL`: `mysql://user:pass@<rds-endpoint>:3306/oam_portal` (or postgres equivalent)
+*   `CORE_DB_URL`: `mysql://user:pass@<rds-endpoint>:3306/oam_portal`
+*   `GTP_PROXY_DB_URL`: `mysql://user:pass@<rds-endpoint>:3306/gtp_proxy`
 *   `NEXTAUTH_SECRET`: Random 32+ char string.
 *   `KEYCLOAK_SECRET`: Client secret from Step 4.
 
 ---
 
-## 6. Integrating Optional Products
+## 6. Upgrading the Portal (Site Upgrade)
+
+To upgrade the portal at your AWS site without downtime, perform a **Rolling Update**:
+
+1.  **Build and Push**: Follow [Step 5](#build-and-push-image) to push the new version to ECR with a new tag (e.g., `:v2`).
+2.  **Update Task Definition**: Create a new revision of the ECS Task Definition pointing to the new image tag.
+3.  **Update Service**: 
+    ```bash
+    aws ecs update-service --cluster <cluster-name> --service <service-name> --task-definition <new-task-def-arn> --force-new-deployment
+    ```
+    AWS will automatically drain old connections and spin up new containers one by one.
+
+---
+
+## 7. Integrating Optional Products
 
 The platform supports hot-installation of new products via metadata.
 

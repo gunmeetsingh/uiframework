@@ -10,6 +10,8 @@ let mockImsiRanges = [
     { imsirange_name: 'Range-002', from_imsi: '405810000000001', to_imsi: '405810000000999' }
 ];
 
+import schema from "@/schemas/gtp-imsi-range.json";
+
 export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions);
 
@@ -20,9 +22,12 @@ export async function GET(req: NextRequest) {
 
     // Try to use the database pool
     try {
-        if (process.env.GTP_PROXY_DB_URL) {
-            const pool = await dbManager.getPool('GTP_PROXY', process.env.GTP_PROXY_DB_URL);
-            const [rows] = await pool.execute('SELECT * FROM gtp_imsi_ranges');
+        const poolName = schema.dbPool;
+        const connectionString = (process.env as any)[`${poolName}_DB_URL`];
+
+        if (connectionString) {
+            const pool = await dbManager.getPool(poolName, connectionString);
+            const [rows] = await pool.execute(`SELECT * FROM ${schema.tableName}`);
             return NextResponse.json(rows);
         }
     } catch (error) {
@@ -53,10 +58,13 @@ export async function POST(req: NextRequest) {
 
     // Try to use the database pool
     try {
-        if (process.env.GTP_PROXY_DB_URL) {
-            const pool = await dbManager.getPool('GTP_PROXY', process.env.GTP_PROXY_DB_URL);
+        const poolName = schema.dbPool;
+        const connectionString = (process.env as any)[`${poolName}_DB_URL`];
+
+        if (connectionString) {
+            const pool = await dbManager.getPool(poolName, connectionString);
             await pool.execute(
-                'INSERT INTO gtp_imsi_ranges (imsirange_name, from_imsi, to_imsi) VALUES (?, ?, ?)',
+                `INSERT INTO ${schema.tableName} (imsirange_name, from_imsi, to_imsi) VALUES (?, ?, ?)`,
                 [data.imsirange_name, data.from_imsi, data.to_imsi]
             );
             return NextResponse.json(data, { status: 201 });

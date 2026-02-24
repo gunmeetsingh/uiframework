@@ -59,13 +59,39 @@ mysql -u <user> -p oam_portal < db/init.sql
 ## 4. Final Configuration
 
 Regardless of the path chosen, update these variables in `docker-compose.yml`:
-*   `DATABASE_URL`: Your MySQL connection string.
+*   `CORE_DB_URL`: `mysql://user:pass@localhost:3306/oam_portal`
+*   `GTP_PROXY_DB_URL`: `mysql://user:pass@localhost:3306/gtp_proxy` (Point to your product's DB)
 *   `NEXTAUTH_URL`: `http://<your-server-ip>:3000`
 *   `KC_HOSTNAME`: `<your-server-ip>`
 
 ---
 
-## 5. Post-Installation & Firewall
+## 5. Upgrading the Portal (Site Upgrade)
+
+When a new package or version is released, follow these steps to upgrade your live site:
+
+1.  **Pull Latest Image**:
+    ```bash
+    # Navigate to your deployment folder
+    cd /path/to/oam-portal
+    
+    # Pull the latest version from registry
+    docker compose pull
+    ```
+2.  **Apply Changes**:
+    ```bash
+    # Restart the containers with the new image
+    docker compose up -d
+    ```
+3.  **Clean Up (Optional)**:
+    ```bash
+    # Remove old images to save space
+    docker image prune -f
+    ```
+
+---
+
+## 6. Post-Installation & Firewall
 
 Ensure your AWS Security Group allows inbound traffic on:
 *   **Port 3000**: OAM Portal UI.

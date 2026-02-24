@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/route";
 import { dbManager } from "@/core/db/manager";
+import schema from "@/schemas/gtp-session-mgmt.json";
 
 export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions);
@@ -10,9 +11,12 @@ export async function GET(req: NextRequest) {
     }
 
     try {
-        if (process.env.GTP_PROXY_DB_URL) {
-            const pool = await dbManager.getPool('GTP_PROXY', process.env.GTP_PROXY_DB_URL);
-            const [rows] = await pool.execute('SELECT * FROM gtp_session_mgmt');
+        const poolName = schema.dbPool;
+        const connectionString = (process.env as any)[`${poolName}_DB_URL`];
+
+        if (connectionString) {
+            const pool = await dbManager.getPool(poolName, connectionString);
+            const [rows] = await pool.execute(`SELECT * FROM ${schema.tableName}`);
             return NextResponse.json(rows);
         }
     } catch (error) {
@@ -34,10 +38,13 @@ export async function POST(req: NextRequest) {
     const data = await req.json();
 
     try {
-        if (process.env.GTP_PROXY_DB_URL) {
-            const pool = await dbManager.getPool('GTP_PROXY', process.env.GTP_PROXY_DB_URL);
+        const poolName = schema.dbPool;
+        const connectionString = (process.env as any)[`${poolName}_DB_URL`];
+
+        if (connectionString) {
+            const pool = await dbManager.getPool(poolName, connectionString);
             await pool.execute(
-                'INSERT INTO gtp_session_mgmt (home_nw_mccmnc, visited_nw_mcc, visited_nw_mccmnc, apn, session_handling, gtp_user_bypass, mapped_apn, pgw_ips, imsirange_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+                `INSERT INTO ${schema.tableName} (home_nw_mccmnc, visited_nw_mcc, visited_nw_mccmnc, apn, session_handling, gtp_user_bypass, mapped_apn, pgw_ips, imsirange_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                     data.home_nw_mccmnc,
                     data.visited_nw_mcc,

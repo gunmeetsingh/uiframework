@@ -10,7 +10,8 @@ let mockImsiRanges = [
     { imsirange_name: 'Range-002', from_imsi: '405810000000001', to_imsi: '405810000000999' }
 ];
 
-import schema from "@/schemas/gtp-imsi-range.json";
+import schemaRaw from "@/schemas/gtp-imsi-range.json";
+const schema = schemaRaw as any;
 
 export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions);

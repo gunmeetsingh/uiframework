@@ -2,6 +2,7 @@
     "title": "GTP IMSI Range Configuration",
     "endpoint": "/api/gtp/imsi-ranges",
     "dbPool": "GTP_PROXY",
+    "tableName": "gtp_imsi_ranges",
     "fields": [
         {
             "name": "imsirange_name",

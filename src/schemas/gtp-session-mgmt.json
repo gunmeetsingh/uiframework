@@ -2,6 +2,7 @@
     "title": "GTP Session Management",
     "endpoint": "/api/gtp/session-mgmt",
     "dbPool": "GTP_PROXY",
+    "tableName": "gtp_session_mgmt",
     "fields": [
         {
             "name": "home_nw_mccmnc",

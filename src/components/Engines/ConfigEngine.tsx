@@ -131,11 +131,11 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: any, initia
                 message.success('Configuration deleted');
             } else {
                 const error = await response.json();
-                message.error(error.error || 'Failed to delete configuration');
+                message.error(`Delete Failed: ${error.error || error.message || 'Unknown server error'}`);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Delete failed:", error);
-            message.error('Failed to connect to server');
+            message.error(`Connection Error: ${error.message}`);
         } finally {
             setLoading(false);
         }
@@ -196,11 +196,11 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: any, initia
                 setMode('list');
             } else {
                 const error = await response.json();
-                message.error(error.error || 'Failed to save configuration');
+                message.error(`Save Failed: ${error.error || error.message || 'Unknown server error'}`);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Save failed:", error);
-            message.error('Failed to connect to server');
+            message.error(`Connection Error: ${error.message}`);
         } finally {
             setLoading(false);
         }
@@ -377,25 +377,25 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: any, initia
                         valuePropName={field.type === 'checkbox' ? 'checked' : undefined}
                         rules={[{ required: field.required, message: `${field.label} is required` }]}
                     >
-                        {field.type === 'text' && <Input />}
-                        {field.type === 'email' && <Input type="email" />}
-                        {field.type === 'number' && <Input type="number" />}
+                        {field.type === 'text' && <Input disabled={field.primary && !!editingRecord} />}
+                        {field.type === 'email' && <Input type="email" disabled={field.primary && !!editingRecord} />}
+                        {field.type === 'number' && <Input type="number" disabled={field.primary && !!editingRecord} />}
                         {field.type === 'select' && (
-                            <Select>
+                            <Select disabled={field.primary && !!editingRecord}>
                                 {field.options?.map((opt: any) => (
                                     <Select.Option key={opt.value} value={opt.value}>{opt.label}</Select.Option>
                                 ))}
                             </Select>
                         )}
                         {field.type === 'multi-select' && (
-                            <Select mode="multiple">
+                            <Select mode="multiple" disabled={field.primary && !!editingRecord}>
                                 {field.options?.map((opt: any) => (
                                     <Select.Option key={opt.value} value={opt.value}>{opt.label}</Select.Option>
                                 ))}
                             </Select>
                         )}
-                        {field.type === 'checkbox' && <Checkbox />}
-                        {field.type === 'date' && <DatePicker style={{ width: '100%' }} />}
+                        {field.type === 'checkbox' && <Checkbox disabled={field.primary && !!editingRecord} />}
+                        {field.type === 'date' && <DatePicker style={{ width: '100%' }} disabled={field.primary && !!editingRecord} />}
                     </Form.Item>
                 ))}
                 <Form.Item>

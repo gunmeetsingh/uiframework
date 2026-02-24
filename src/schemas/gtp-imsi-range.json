@@ -4,6 +4,12 @@
     "permission": "gtp:imsi:manage",
     "dbPool": "GTP_PROXY",
     "tableName": "gtp_imsi_ranges",
+    "metadataConfig": {
+        "deleteType": "soft",
+        "updatedByField": "updated_by",
+        "updatedAtField": "updated_at",
+        "lastActionField": "last_action"
+    },
     "fields": [
         {
             "name": "imsirange_name",

@@ -65,20 +65,29 @@ export async function POST(req: NextRequest) {
 
         if (connectionString) {
             const pool = await dbManager.getPool(poolName, connectionString);
-            await pool.execute(
-                `INSERT INTO ${schema.tableName} (imsirange_name, from_imsi, to_imsi) VALUES (?, ?, ?)`,
-                [data.imsirange_name, data.from_imsi, data.to_imsi]
-            );
+
+            // Metadata Injection
+            const meta = schema.metadataConfig;
+            let finalData = { ...data };
+            if (meta?.updatedByField) finalData[meta.updatedByField] = (session.user as any).email || (session.user as any).name;
+            if (meta?.lastActionField) finalData[meta.lastActionField] = 'I';
+
+            const keys = Object.keys(finalData);
+            const values = Object.values(finalData);
+            const placeholders = keys.map(() => '?').join(', ');
+            const sql = `INSERT INTO ${schema.tableName} (${keys.map(k => `\`${k}\``).join(', ')}) VALUES (${placeholders})`;
+
+            await pool.execute(sql, values as any[]);
 
             await AuditLogger.log({
                 username: (session.user as any).email || (session.user as any).name,
                 screen: schema.title,
                 action: 'Data Insert',
                 status: 'Success',
-                details: `Inserted IMSI Range: ${data.imsirange_name}. Query: INSERT INTO ${schema.tableName} (imsirange_name, from_imsi, to_imsi) VALUES ('${data.imsirange_name}', '${data.from_imsi}', '${data.to_imsi}')`
+                details: `Inserted record into ${schema.tableName}. Data: ${JSON.stringify(finalData)}`
             });
 
-            return NextResponse.json(data, { status: 201 });
+            return NextResponse.json(finalData, { status: 201 });
         }
     } catch (error) {
         console.error("Database Save Failed (POST):", error);
@@ -106,9 +115,16 @@ export async function PUT(req: NextRequest) {
         if (connectionString) {
             const pool = await dbManager.getPool(poolName, connectionString);
 
+            // Metadata Injection
+            const meta = schema.metadataConfig;
+            let finalData = { ...data };
+            if (meta?.updatedByField) finalData[meta.updatedByField] = (session.user as any).email || (session.user as any).name;
+            if (meta?.lastActionField) finalData[meta.lastActionField] = 'U';
+            // Note: updatedAtField is usually handled by MySQL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+
             // Build SET clause
-            const setClause = Object.keys(data).map(key => `\`${key}\` = ?`).join(', ');
-            const setValues = Object.values(data);
+            const setClause = Object.keys(finalData).map(key => `\`${key}\` = ?`).join(', ');
+            const setValues = Object.values(finalData);
 
             // Build WHERE clause based on identifiers
             const whereClause = Object.keys(_identifiers).map(key => `\`${key}\` = ?`).join(' AND ');
@@ -153,8 +169,26 @@ export async function DELETE(req: NextRequest) {
             const whereClause = Object.keys(identifiers).map(key => `\`${key}\` = ?`).join(' AND ');
             const whereValues = Object.values(identifiers);
 
-            const sql = `DELETE FROM ${schema.tableName} WHERE ${whereClause}`;
-            await pool.execute(sql, whereValues as any[]);
+            const meta = schema.metadataConfig;
+            let sql = '';
+            let execValues = [...whereValues];
+
+            if (meta?.deleteType === 'soft' && meta?.lastActionField) {
+                // Soft Delete logic
+                let setParts = [`\`${meta.lastActionField}\` = 'D'`];
+                let setValues = [];
+                if (meta.updatedByField) {
+                    setParts.push(`\`${meta.updatedByField}\` = ?`);
+                    setValues.push((session.user as any).email || (session.user as any).name);
+                }
+                sql = `UPDATE ${schema.tableName} SET ${setParts.join(', ')} WHERE ${whereClause}`;
+                execValues = [...setValues, ...whereValues];
+            } else {
+                // Hard Delete logic
+                sql = `DELETE FROM ${schema.tableName} WHERE ${whereClause}`;
+            }
+
+            await pool.execute(sql, execValues as any[]);
 
             await AuditLogger.log({
                 username: (session.user as any).email || (session.user as any).name,

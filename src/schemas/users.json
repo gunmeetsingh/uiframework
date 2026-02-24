@@ -89,6 +89,18 @@
                 {
                     "label": "Access Grafana",
                     "value": "grafana"
+                },
+                {
+                    "label": "Manage GTP IMSI Ranges",
+                    "value": "gtp:imsi:manage"
+                },
+                {
+                    "label": "Manage GTP MCC-MNC Mappings",
+                    "value": "gtp:mapping:manage"
+                },
+                {
+                    "label": "Manage GTP Session Mgmt",
+                    "value": "gtp:session:manage"
                 }
             ],
             "required": false,

@@ -1,0 +1,60 @@
+{
+    "title": "GTP Session Management",
+    "endpoint": "/api/gtp/session-mgmt",
+    "dbPool": "GTP_PROXY",
+    "fields": [
+        {
+            "name": "home_nw_mccmnc",
+            "label": "Home NW MCCMNC",
+            "type": "text",
+            "required": true
+        },
+        {
+            "name": "visited_nw_mcc",
+            "label": "Visited NW MCC",
+            "type": "text",
+            "required": true
+        },
+        {
+            "name": "visited_nw_mccmnc",
+            "label": "Visited NW MCCMNC",
+            "type": "text",
+            "required": true
+        },
+        {
+            "name": "apn",
+            "label": "APN",
+            "type": "text",
+            "required": true
+        },
+        {
+            "name": "session_handling",
+            "label": "Session Handling",
+            "type": "text",
+            "required": true
+        },
+        {
+            "name": "gtp_user_bypass",
+            "label": "GTP User Bypass",
+            "type": "text",
+            "required": true
+        },
+        {
+            "name": "mapped_apn",
+            "label": "Mapped APN",
+            "type": "text"
+        },
+        {
+            "name": "pgw_ips",
+            "label": "PGW IPs",
+            "type": "text",
+            "required": true
+        },
+        {
+            "name": "imsirange_name",
+            "label": "IMSI Range Name",
+            "type": "text",
+            "required": true
+        }
+    ]
+}

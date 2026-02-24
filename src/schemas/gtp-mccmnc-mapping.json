@@ -1,0 +1,31 @@
+{
+    "title": "MCC-MNC Mappings",
+    "endpoint": "/api/gtp/mccmnc-mappings",
+    "dbPool": "GTP_PROXY",
+    "fields": [
+        {
+            "name": "network_name",
+            "label": "Network Name",
+            "type": "text",
+            "required": true
+        },
+        {
+            "name": "mcc",
+            "label": "MCC",
+            "type": "text",
+            "required": true
+        },
+        {
+            "name": "mnc",
+            "label": "MNC",
+            "type": "text",
+            "required": true
+        },
+        {
+            "name": "mnc_touse_for_handling",
+            "label": "MNC to use for Handling",
+            "type": "text",
+            "required": true
+        }
+    ]
+}

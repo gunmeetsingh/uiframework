@@ -15,6 +15,7 @@ export interface ModuleDefinition {
     icon?: React.ReactNode;
     permission: string;
     schema?: string;
+    dbPool?: string;
 }
 
 
@@ -24,7 +25,8 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
         title: 'Dashboard',
         path: '/dashboard',
         category: 'Dashboard',
-        permission: 'dashboard:read'
+        permission: 'dashboard:read',
+        dbPool: 'CORE'
     },
     {
         id: 'kpi-report',
@@ -40,7 +42,35 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
         path: '/configuration/nodes',
         category: 'Configuration',
         permission: 'node:read',
-        schema: '/schemas/node-config.json'
+        schema: '/schemas/node-config.json',
+        dbPool: 'CORE'
+    },
+    {
+        id: 'gtp-imsi-range',
+        title: 'GTP IMSI Ranges',
+        path: '/configuration/gtp-imsi-range',
+        category: 'Configuration',
+        permission: 'gtp:imsi:manage',
+        schema: '/schemas/gtp-imsi-range.json',
+        dbPool: 'GTP_PROXY'
+    },
+    {
+        id: 'gtp-mccmnc-mapping',
+        title: 'MCC-MNC Mappings',
+        path: '/configuration/gtp-mccmnc-mapping',
+        category: 'Configuration',
+        permission: 'gtp:mapping:manage',
+        schema: '/schemas/gtp-mccmnc-mapping.json',
+        dbPool: 'GTP_PROXY'
+    },
+    {
+        id: 'gtp-session-mgmt',
+        title: 'GTP Session Mgmt',
+        path: '/configuration/gtp-session-mgmt',
+        category: 'Configuration',
+        permission: 'gtp:session:manage',
+        schema: '/schemas/gtp-session-mgmt.json',
+        dbPool: 'GTP_PROXY'
     },
     {
         id: 'user-management',
@@ -48,7 +78,8 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
         path: '/configuration/users',
         category: 'User Management',
         permission: 'user:manage',
-        schema: '/schemas/users.json'
+        schema: '/schemas/users.json',
+        dbPool: 'CORE'
     },
     {
         id: 'grafana',

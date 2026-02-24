@@ -6,6 +6,7 @@ import * as Icons from '@ant-design/icons';
 import { brandingConfig } from '@/branding.config';
 import dayjs from 'dayjs';
 import { Guard } from '@/components/Access/Guard';
+import { useSession } from 'next-auth/react';
 
 interface Option {
     label: string;
@@ -32,21 +33,21 @@ interface ConfigSchema {
     fields: FieldSchema[];
 }
 
-export const ConfigEngine = ({ schema, initialData = [] }: { schema: ConfigSchema, initialData?: any[] }) => {
+export const ConfigEngine = ({ schema, initialData = [] }: { schema: any, initialData?: any[] }) => {
+    const { data: session } = useSession();
+
+    // Permission priority: schema.permissions > schema.permission > default
     const permissions = schema.permissions || {
-        create: 'node:create',
-        update: 'node:update',
-        delete: 'node:delete'
+        create: schema.permission || 'node:create',
+        update: schema.permission || 'node:update',
+        delete: schema.permission || 'node:delete'
     };
 
     // Mode state: 'list' or 'form'
     const [mode, setMode] = useState<'list' | 'form'>('list');
 
     // Data state for the list view
-    const [data, setData] = useState<any[]>(initialData.length > 0 ? initialData : [
-        { id: '1', nodeName: 'Node-Alpha', ipAddress: '192.168.1.10', nodeType: 'router', isActive: true, deploymentDate: '2023-01-15' },
-        { id: '2', nodeName: 'Switch-Beta', ipAddress: '192.168.1.20', nodeType: 'switch', isActive: true, deploymentDate: '2023-02-20' },
-    ]);
+    const [data, setData] = useState<any[]>(initialData);
 
     // Selection state for bulk delete
     const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -54,6 +55,29 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: ConfigSchem
     // Editing state
     const [editingRecord, setEditingRecord] = useState<any>(null);
     const [form] = Form.useForm();
+    const [loading, setLoading] = useState(false);
+
+    // -- Data Fetching --
+    React.useEffect(() => {
+        const fetchData = async () => {
+            if (!schema.endpoint) return;
+            setLoading(true);
+            try {
+                const response = await fetch(schema.endpoint);
+                if (response.ok) {
+                    const result = await response.json();
+                    setData(result);
+                }
+            } catch (error) {
+                console.error("Failed to fetch configuration data:", error);
+                message.error("Failed to load data from server");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, [schema.endpoint]);
 
     // -- Handlers --
 
@@ -68,7 +92,7 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: ConfigSchem
         const formValues = { ...record };
 
         // Generic date transformation based on schema
-        schema.fields.forEach(field => {
+        schema.fields.forEach((field: any) => {
             if (field.type === 'date' && formValues[field.name]) {
                 formValues[field.name] = dayjs(formValues[field.name]);
             }
@@ -93,7 +117,7 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: ConfigSchem
         const processedValues = { ...values };
 
         // Generic date transformation based on schema
-        schema.fields.forEach(field => {
+        schema.fields.forEach((field: any) => {
             if (field.type === 'date' && processedValues[field.name]) {
                 processedValues[field.name] = processedValues[field.name].format('YYYY-MM-DD');
             }
@@ -117,9 +141,9 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: ConfigSchem
     const downloadCSV = () => {
         if (!data || data.length === 0) return;
 
-        const headers = schema.fields.map(f => f.label).join(',');
-        const rows = data.map(item => {
-            return schema.fields.map(f => {
+        const headers = schema.fields.map((f: any) => f.label).join(',');
+        const rows = data.map((item: any) => {
+            return schema.fields.map((f: any) => {
                 const val = item[f.name];
                 return typeof val === 'string' ? `"${val.replace(/"/g, '""')}"` : val;
             }).join(',');
@@ -139,12 +163,12 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: ConfigSchem
 
     const columns = [
         ...schema.fields
-            .map((field, index) => {
+            .map((field: any, index: number) => {
                 // Generate filters dynamically from current data
-                const uniqueValues = Array.from(new Set(data.map(item => item[field.name]))).filter(Boolean);
-                const filters = uniqueValues.map(val => {
+                const uniqueValues = Array.from(new Set(data.map((item: any) => item[field.name]))).filter(Boolean);
+                const filters = uniqueValues.map((val: any) => {
                     if (field.type === 'select' && field.options) {
-                        const opt = field.options.find(o => o.value === val);
+                        const opt = field.options.find((o: any) => o.value === val);
                         return { text: opt ? opt.label : String(val), value: val };
                     }
                     return { text: String(val), value: val };
@@ -160,14 +184,14 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: ConfigSchem
                             if (Array.isArray(text)) {
                                 return (
                                     <Space size={[0, 4]} wrap>
-                                        {text.map(val => {
-                                            const opt = field.options?.find(o => o.value === val);
+                                        {text.map((val: any) => {
+                                            const opt = field.options?.find((o: any) => o.value === val);
                                             return <Tag color="blue" key={val}>{opt ? opt.label : val}</Tag>;
                                         })}
                                     </Space>
                                 );
                             }
-                            const opt = field.options.find(o => o.value === text);
+                            const opt = field.options.find((o: any) => o.value === text);
                             return opt ? opt.label : text;
                         }
                         return text;
@@ -248,8 +272,9 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: ConfigSchem
                     rowSelection={rowSelection}
                     columns={columns}
                     dataSource={data}
-                    rowKey="id"
-                    pagination={{ pageSize: 5 }}
+                    rowKey={(record) => record.id || record.imsirange_name || record.network_name || record.home_nw_mccmnc || Math.random().toString()}
+                    pagination={{ pageSize: 10 }}
+                    loading={loading}
                     style={{ background: 'transparent' }}
                 />
             </Card>
@@ -273,7 +298,7 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: ConfigSchem
                 layout="vertical"
                 onFinish={onFinish}
             >
-                {schema.fields.map((field) => (
+                {schema.fields.map((field: any) => (
                     <Form.Item
                         key={field.name}
                         label={field.label}
@@ -286,14 +311,14 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: ConfigSchem
                         {field.type === 'number' && <Input type="number" />}
                         {field.type === 'select' && (
                             <Select>
-                                {field.options?.map(opt => (
+                                {field.options?.map((opt: any) => (
                                     <Select.Option key={opt.value} value={opt.value}>{opt.label}</Select.Option>
                                 ))}
                             </Select>
                         )}
                         {field.type === 'multi-select' && (
                             <Select mode="multiple">
-                                {field.options?.map(opt => (
+                                {field.options?.map((opt: any) => (
                                     <Select.Option key={opt.value} value={opt.value}>{opt.label}</Select.Option>
                                 ))}
                             </Select>

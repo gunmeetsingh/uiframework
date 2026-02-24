@@ -29,7 +29,14 @@ export async function GET(req: NextRequest) {
 
         if (connectionString) {
             const pool = await dbManager.getPool(poolName, connectionString);
-            const [rows] = await pool.execute(`SELECT * FROM ${schema.tableName}`);
+
+            let query = `SELECT * FROM ${schema.tableName}`;
+            const filter = schema.metadataConfig?.listFilter;
+            if (filter) {
+                query += ` WHERE ${filter}`;
+            }
+
+            const [rows] = await pool.execute(query);
             return NextResponse.json(rows);
         }
     } catch (error) {
@@ -89,11 +96,9 @@ export async function POST(req: NextRequest) {
 
             return NextResponse.json(finalData, { status: 201 });
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error("Database Save Failed (POST):", error);
-        if (process.env.NODE_ENV === 'production') {
-            return NextResponse.json({ error: "Database Save Failed" }, { status: 500 });
-        }
+        return NextResponse.json({ error: error.message || "Database Save Failed" }, { status: 500 });
     }
 
     mockImsiRanges.push(data);
@@ -143,9 +148,9 @@ export async function PUT(req: NextRequest) {
 
             return NextResponse.json({ success: true, data });
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error("Database Update Failed (PUT):", error);
-        return NextResponse.json({ error: "Database Update Failed" }, { status: 500 });
+        return NextResponse.json({ error: error.message || "Database Update Failed" }, { status: 500 });
     }
 
     return NextResponse.json({ error: "DB Not Configured" }, { status: 500 });
@@ -200,9 +205,9 @@ export async function DELETE(req: NextRequest) {
 
             return NextResponse.json({ success: true });
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error("Database Delete Failed (DELETE):", error);
-        return NextResponse.json({ error: "Database Delete Failed" }, { status: 500 });
+        return NextResponse.json({ error: error.message || "Database Delete Failed" }, { status: 500 });
     }
 
     return NextResponse.json({ error: "DB Not Configured" }, { status: 500 });

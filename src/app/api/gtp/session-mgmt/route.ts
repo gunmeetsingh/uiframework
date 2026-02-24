@@ -67,3 +67,61 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ error: "DB URL Not Configured" }, { status: 500 });
 }
+
+export async function PUT(req: NextRequest) {
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any).permissions.includes('gtp:session:manage')) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
+
+    const { _identifiers, ...data } = await req.json();
+
+    try {
+        const poolName = schema.dbPool;
+        const connectionString = (process.env as any)[`${poolName}_DB_URL`];
+
+        if (connectionString) {
+            const pool = await dbManager.getPool(poolName, connectionString);
+            const setClause = Object.keys(data).map(key => `\`${key}\` = ?`).join(', ');
+            const setValues = Object.values(data);
+            const whereClause = Object.keys(_identifiers).map(key => `\`${key}\` = ?`).join(' AND ');
+            const whereValues = Object.values(_identifiers);
+
+            const sql = `UPDATE ${schema.tableName} SET ${setClause} WHERE ${whereClause}`;
+            await pool.execute(sql, [...setValues, ...whereValues] as any[]);
+            return NextResponse.json({ success: true, data });
+        }
+    } catch (error) {
+        console.error("Database Update Failed (PUT):", error);
+        return NextResponse.json({ error: "Database Update Failed" }, { status: 500 });
+    }
+    return NextResponse.json({ error: "DB Not Configured" }, { status: 500 });
+}
+
+export async function DELETE(req: NextRequest) {
+    const session = await getServerSession(authOptions);
+    if (!session || !(session.user as any).permissions.includes('gtp:session:manage')) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
+    }
+
+    const identifiers = await req.json();
+
+    try {
+        const poolName = schema.dbPool;
+        const connectionString = (process.env as any)[`${poolName}_DB_URL`];
+
+        if (connectionString) {
+            const pool = await dbManager.getPool(poolName, connectionString);
+            const whereClause = Object.keys(identifiers).map(key => `\`${key}\` = ?`).join(' AND ');
+            const whereValues = Object.values(identifiers);
+
+            const sql = `DELETE FROM ${schema.tableName} WHERE ${whereClause}`;
+            await pool.execute(sql, whereValues as any[]);
+            return NextResponse.json({ success: true });
+        }
+    } catch (error) {
+        console.error("Database Delete Failed (DELETE):", error);
+        return NextResponse.json({ error: "Database Delete Failed" }, { status: 500 });
+    }
+    return NextResponse.json({ error: "DB Not Configured" }, { status: 500 });
+}

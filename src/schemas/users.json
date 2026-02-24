@@ -1,6 +1,7 @@
 {
     "module": "User Management",
     "endpoint": "/api/users",
+    "permission": "user:manage",
     "fields": [
         {
             "name": "username",

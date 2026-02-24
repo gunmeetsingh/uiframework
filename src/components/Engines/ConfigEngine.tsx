@@ -20,6 +20,8 @@ interface FieldSchema {
     options?: Option[];
     required?: boolean;
     showInList?: boolean;
+    primary?: boolean;
+    hidden?: boolean;
 }
 
 interface ConfigSchema {
@@ -102,18 +104,49 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: any, initia
         setMode('form');
     };
 
-    const handleDelete = (id: string) => {
-        setData(prev => prev.filter(item => item.id !== id));
-        message.success('Configuration deleted');
+    const handleDelete = async (record: any) => {
+        if (!schema.endpoint) {
+            setData(prev => prev.filter(item => item !== record));
+            message.success('Configuration deleted locally');
+            return;
+        }
+
+        setLoading(true);
+        try {
+            // Send primary fields as identifiers
+            const primaryFields = schema.fields.filter((f: any) => f.primary);
+            const identifiers = primaryFields.reduce((acc: any, f: any) => {
+                acc[f.name] = record[f.name];
+                return acc;
+            }, {});
+
+            const response = await fetch(schema.endpoint, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(identifiers),
+            });
+
+            if (response.ok) {
+                setData(prev => prev.filter(item => item !== record));
+                message.success('Configuration deleted');
+            } else {
+                const error = await response.json();
+                message.error(error.error || 'Failed to delete configuration');
+            }
+        } catch (error) {
+            console.error("Delete failed:", error);
+            message.error('Failed to connect to server');
+        } finally {
+            setLoading(false);
+        }
     };
 
     const handleBulkDelete = () => {
-        setData(prev => prev.filter(item => !selectedRowKeys.includes(item.id)));
-        setSelectedRowKeys([]);
-        message.success(`${selectedRowKeys.length} configurations deleted`);
+        // Bulk delete implementation would need an API endpoint that supports it
+        message.warning('Bulk delete not yet implemented for persistent storage');
     };
 
-    const onFinish = (values: any) => {
+    const onFinish = async (values: any) => {
         const processedValues = { ...values };
 
         // Generic date transformation based on schema
@@ -123,17 +156,54 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: any, initia
             }
         });
 
-        if (editingRecord) {
-            // Update existing
-            setData(prev => prev.map(item => item.id === editingRecord.id ? { ...item, ...processedValues } : item));
-            message.success('Configuration updated');
-        } else {
-            // Create new
-            const newRecord = { ...processedValues, id: Date.now().toString() };
-            setData(prev => [...prev, newRecord]);
-            message.success('Configuration created');
+        if (!schema.endpoint) {
+            if (editingRecord) {
+                setData(prev => prev.map(item => item === editingRecord ? { ...item, ...processedValues } : item));
+                message.success('Configuration updated locally');
+            } else {
+                const newRecord = { ...processedValues, id: Date.now().toString() };
+                setData(prev => [...prev, newRecord]);
+                message.success('Configuration created locally');
+            }
+            setMode('list');
+            return;
         }
-        setMode('list');
+
+        setLoading(true);
+        try {
+            const method = editingRecord ? 'PUT' : 'POST';
+
+            // For PUT, include the identifiers from the editing record
+            const payload = editingRecord
+                ? { ...processedValues, _identifiers: schema.fields.filter((f: any) => f.primary).reduce((acc: any, f: any) => { acc[f.name] = editingRecord[f.name]; return acc; }, {}) }
+                : processedValues;
+
+            const response = await fetch(schema.endpoint, {
+                method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (editingRecord) {
+                    setData(prev => prev.map(item => item === editingRecord ? { ...item, ...processedValues } : item));
+                    message.success('Configuration updated');
+                } else {
+                    setData(prev => [...prev, result]);
+                    message.success('Configuration created');
+                }
+                setMode('list');
+            } else {
+                const error = await response.json();
+                message.error(error.error || 'Failed to save configuration');
+            }
+        } catch (error) {
+            console.error("Save failed:", error);
+            message.error('Failed to connect to server');
+        } finally {
+            setLoading(false);
+        }
     };
 
     // -- Render Helpers --
@@ -163,6 +233,7 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: any, initia
 
     const columns = [
         ...schema.fields
+            .filter((field: any) => !field.hidden)
             .map((field: any, index: number) => {
                 // Generate filters dynamically from current data
                 const uniqueValues = Array.from(new Set(data.map((item: any) => item[field.name]))).filter(Boolean);
@@ -227,7 +298,7 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: any, initia
                         />
                     </Guard>
                     <Guard permission={permissions.delete!}>
-                        <Popconfirm title="Are you sure?" onConfirm={() => handleDelete(record.id)}>
+                        <Popconfirm title="Are you sure?" onConfirm={() => handleDelete(record)}>
                             <Button type="text" danger icon={<DeleteOutlined />} />
                         </Popconfirm>
                     </Guard>
@@ -298,7 +369,7 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: any, initia
                 layout="vertical"
                 onFinish={onFinish}
             >
-                {schema.fields.map((field: any) => (
+                {schema.fields.filter((f: any) => !f.hidden).map((field: any) => (
                     <Form.Item
                         key={field.name}
                         label={field.label}

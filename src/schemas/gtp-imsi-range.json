@@ -1,6 +1,7 @@
 {
     "title": "GTP IMSI Range Configuration",
     "endpoint": "/api/gtp/imsi-ranges",
+    "permission": "gtp:imsi:manage",
     "dbPool": "GTP_PROXY",
     "tableName": "gtp_imsi_ranges",
     "fields": [
@@ -8,7 +9,8 @@
             "name": "imsirange_name",
             "label": "IMSI Range Name",
             "type": "text",
-            "required": true
+            "required": true,
+            "primary": true
         },
         {
             "name": "from_imsi",

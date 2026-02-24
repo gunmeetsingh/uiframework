@@ -27,6 +27,13 @@ export default function GrafanaPage() {
         );
     }
 
+    const grafanaUrl = process.env.NEXT_PUBLIC_GRAFANA_URL || "https://play.grafana.org/d-solo/000000012/grafana-play-home?orgId=1&panelId=2";
+
+    // Append theme=dark if not present (simple check)
+    const finalUrl = grafanaUrl.includes('?')
+        ? `${grafanaUrl}&theme=dark`
+        : `${grafanaUrl}?theme=dark`;
+
     return (
         <div style={{ height: 'calc(100vh - 120px)', display: 'flex', flexDirection: 'column' }}>
             <h1 style={{ marginBottom: 16 }}>Grafana Monitor Platform</h1>
@@ -45,25 +52,12 @@ export default function GrafanaPage() {
                     position: 'relative'
                 }}>
                     <iframe
-                        src="https://play.grafana.org/d-solo/000000012/grafana-play-home?orgId=1&panelId=2"
+                        src={finalUrl}
                         title="Grafana Dashboard"
                         width="100%"
                         height="100%"
                         frameBorder="0"
-                        style={{ filter: 'invert(0.9) hue-rotate(180deg)' }} // Simple trick to make light mode demo look dark-ish, or remove if demo supports dark
                     />
-                    <div style={{
-                        position: 'absolute',
-                        bottom: 16,
-                        right: 16,
-                        background: 'rgba(0,0,0,0.7)',
-                        padding: '8px 16px',
-                        borderRadius: 4,
-                        color: '#fff',
-                        fontSize: 12
-                    }}>
-                        Live Demo from play.grafana.org
-                    </div>
                 </div>
             )}
         </div>

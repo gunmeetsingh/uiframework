@@ -1,9 +1,17 @@
 {
     "title": "GTP Session Management",
     "endpoint": "/api/gtp/session-mgmt",
+    "permission": "gtp:session:manage",
     "dbPool": "GTP_PROXY",
     "tableName": "gtp_session_mgmt",
     "fields": [
+        {
+            "name": "id",
+            "label": "ID",
+            "type": "number",
+            "primary": true,
+            "hidden": true
+        },
         {
             "name": "home_nw_mccmnc",
             "label": "Home NW MCCMNC",

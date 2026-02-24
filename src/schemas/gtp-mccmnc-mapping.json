@@ -1,6 +1,7 @@
 {
     "title": "MCC-MNC Mappings",
     "endpoint": "/api/gtp/mccmnc-mappings",
+    "permission": "gtp:mapping:manage",
     "dbPool": "GTP_PROXY",
     "tableName": "gtp_mccmnc_mappings",
     "fields": [
@@ -8,7 +9,8 @@
             "name": "network_name",
             "label": "Network Name",
             "type": "text",
-            "required": true
+            "required": true,
+            "primary": true
         },
         {
             "name": "mcc",

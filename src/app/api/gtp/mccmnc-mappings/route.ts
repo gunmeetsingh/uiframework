@@ -45,18 +45,28 @@ export async function POST(req: NextRequest) {
 
         if (connectionString) {
             const pool = await dbManager.getPool(poolName, connectionString);
-            await pool.execute(
-                `INSERT INTO ${schema.tableName} (network_name, mcc, mnc, mnc_touse_for_handling) VALUES (?, ?, ?, ?)`,
-                [data.network_name, data.mcc, data.mnc, data.mnc_touse_for_handling]
-            );
+
+            // Metadata Injection
+            const meta = schema.metadataConfig;
+            let finalData = { ...data };
+            if (meta?.updatedByField) finalData[meta.updatedByField] = (session.user as any).email || (session.user as any).name;
+            if (meta?.lastActionField) finalData[meta.lastActionField] = 'I';
+
+            const keys = Object.keys(finalData);
+            const values = Object.values(finalData);
+            const placeholders = keys.map(() => '?').join(', ');
+            const sql = `INSERT INTO ${schema.tableName} (${keys.map(k => `\`${k}\``).join(', ')}) VALUES (${placeholders})`;
+
+            await pool.execute(sql, values as any[]);
+
             await AuditLogger.log({
                 username: (session.user as any).email || (session.user as any).name,
                 screen: schema.title,
                 action: 'Data Insert',
                 status: 'Success',
-                details: `Inserted MCC-MNC Mapping: ${data.network_name}. Params: ${JSON.stringify(data)}`
+                details: `Inserted record into ${schema.tableName}. Data: ${JSON.stringify(finalData)}`
             });
-            return NextResponse.json(data, { status: 201 });
+            return NextResponse.json(finalData, { status: 201 });
         }
     } catch (error) {
         console.error("Database Save Failed (Mappings POST):", error);
@@ -80,8 +90,15 @@ export async function PUT(req: NextRequest) {
 
         if (connectionString) {
             const pool = await dbManager.getPool(poolName, connectionString);
-            const setClause = Object.keys(data).map(key => `\`${key}\` = ?`).join(', ');
-            const setValues = Object.values(data);
+
+            // Metadata Injection
+            const meta = schema.metadataConfig;
+            let finalData = { ...data };
+            if (meta?.updatedByField) finalData[meta.updatedByField] = (session.user as any).email || (session.user as any).name;
+            if (meta?.lastActionField) finalData[meta.lastActionField] = 'U';
+
+            const setClause = Object.keys(finalData).map(key => `\`${key}\` = ?`).join(', ');
+            const setValues = Object.values(finalData);
             const whereClause = Object.keys(_identifiers).map(key => `\`${key}\` = ?`).join(' AND ');
             const whereValues = Object.values(_identifiers);
 
@@ -120,8 +137,24 @@ export async function DELETE(req: NextRequest) {
             const whereClause = Object.keys(identifiers).map(key => `\`${key}\` = ?`).join(' AND ');
             const whereValues = Object.values(identifiers);
 
-            const sql = `DELETE FROM ${schema.tableName} WHERE ${whereClause}`;
-            await pool.execute(sql, whereValues as any[]);
+            const meta = schema.metadataConfig;
+            let sql = '';
+            let execValues = [...whereValues];
+
+            if (meta?.deleteType === 'soft' && meta?.lastActionField) {
+                let setParts = [`\`${meta.lastActionField}\` = 'D'`];
+                let setValues = [];
+                if (meta.updatedByField) {
+                    setParts.push(`\`${meta.updatedByField}\` = ?`);
+                    setValues.push((session.user as any).email || (session.user as any).name);
+                }
+                sql = `UPDATE ${schema.tableName} SET ${setParts.join(', ')} WHERE ${whereClause}`;
+                execValues = [...setValues, ...whereValues];
+            } else {
+                sql = `DELETE FROM ${schema.tableName} WHERE ${whereClause}`;
+            }
+
+            await pool.execute(sql, execValues as any[]);
             await AuditLogger.log({
                 username: (session.user as any).email || (session.user as any).name,
                 screen: schema.title,

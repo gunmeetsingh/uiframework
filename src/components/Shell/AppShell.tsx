@@ -49,7 +49,7 @@ const AppShellContent = ({ children }: { children: React.ReactNode }) => {
             key: category.id,
             icon: category.icon,
             label: category.title,
-            children: children.length > 1 || (category.id !== 'Dashboard' && category.id !== 'Monitor' && category.id !== 'User Management') ? children : undefined,
+            children: children.length > 1 || (category.id !== 'Dashboard' && category.id !== 'Monitor' && category.id !== 'User Management' && category.id !== 'Audit Trail') ? children : undefined,
         };
 
     }).filter(Boolean);

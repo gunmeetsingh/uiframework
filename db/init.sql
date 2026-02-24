@@ -41,7 +41,10 @@ CREATE TABLE IF NOT EXISTS network_nodes (
     type VARCHAR(50),
     status VARCHAR(20) DEFAULT 'active',
     tenant_id VARCHAR(100),
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    updated_by VARCHAR(255),
+    last_action CHAR(1) DEFAULT 'I' COMMENT 'I=Insert, U=Update, D=Delete'
 );
 
 -- 5. Audit Trail Table

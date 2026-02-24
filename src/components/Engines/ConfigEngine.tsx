@@ -283,7 +283,7 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: any, initia
                     }
                 };
             }),
-        {
+        ...(permissions.update !== 'disabled' || permissions.delete !== 'disabled' ? [{
             title: 'Actions',
             key: 'actions',
             width: 150,
@@ -304,7 +304,7 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: any, initia
                     </Guard>
                 </Space>
             )
-        }
+        }] : [])
     ];
 
     if (mode === 'list') {

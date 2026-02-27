@@ -12,7 +12,7 @@ export interface ModuleDefinition {
     id: string;
     title: string;
     path: string;
-    category: 'Dashboard' | 'Reports' | 'Configuration' | 'Monitor' | 'User Management' | 'Audit Trail';
+    category: 'Dashboard' | 'GTP Proxy' | 'Reports' | 'Monitor' | 'User Management' | 'Audit Trail' | 'Configuration';
     icon?: React.ReactNode;
     permission: string;
     schema?: string;
@@ -50,7 +50,7 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
         id: 'gtp-imsi-range',
         title: 'GTP IMSI Ranges',
         path: '/configuration/gtp-imsi-range',
-        category: 'Configuration',
+        category: 'GTP Proxy',
         permission: 'gtp:imsi:manage',
         schema: '/schemas/gtp-imsi-range.json',
         dbPool: 'GTP_PROXY'
@@ -59,7 +59,7 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
         id: 'gtp-mccmnc-mapping',
         title: 'MCC-MNC Mappings',
         path: '/configuration/gtp-mccmnc-mapping',
-        category: 'Configuration',
+        category: 'GTP Proxy',
         permission: 'gtp:mapping:manage',
         schema: '/schemas/gtp-mccmnc-mapping.json',
         dbPool: 'GTP_PROXY'
@@ -68,7 +68,7 @@ export const MODULE_REGISTRY: ModuleDefinition[] = [
         id: 'gtp-session-mgmt',
         title: 'GTP Session Mgmt',
         path: '/configuration/gtp-session-mgmt',
-        category: 'Configuration',
+        category: 'GTP Proxy',
         permission: 'gtp:session:manage',
         schema: '/schemas/gtp-session-mgmt.json',
         dbPool: 'GTP_PROXY'
@@ -104,6 +104,7 @@ export const CATEGORIES = [
     { id: 'Dashboard', title: 'Dashboard', icon: React.createElement(DashboardOutlined) },
     { id: 'Reports', title: 'Reports', icon: React.createElement(BarChartOutlined) },
     { id: 'Configuration', title: 'Configuration', icon: React.createElement(SettingOutlined) },
+    { id: 'GTP Proxy', title: 'GTP Proxy', icon: React.createElement(GlobalOutlined) },
     { id: 'User Management', title: 'User Management', icon: React.createElement(TeamOutlined) },
     { id: 'Audit Trail', title: 'Audit Trail', icon: React.createElement(HistoryOutlined) },
     { id: 'Monitor', title: 'Monitor Platform', icon: React.createElement(GlobalOutlined) }

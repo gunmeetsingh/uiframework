@@ -3,6 +3,10 @@
     "permission": "user:manage",
     "dbPool": "CORE",
     "tableName": "audit_logs",
+    "metadataConfig": {
+        "supportsDateRange": true,
+        "dateRangeField": "timestamp"
+    },
     "fields": [
         {
             "name": "timestamp",

@@ -3,10 +3,17 @@
     "endpoint": "/api/gtp/mccmnc-mappings",
     "permission": "gtp:mapping:manage",
     "dbPool": "GTP_PROXY",
-    "tableName": "gtp_mccmnc_mappings",
+    "tableName": "gtp_mccmnc_map",
+    "metadataConfig": {
+        "deleteType": "soft",
+        "updatedByField": "updated_by",
+        "updatedAtField": "updated_at",
+        "lastActionField": "last_action",
+        "listFilter": "last_action != 'D' OR last_action IS NULL"
+    },
     "fields": [
         {
-            "name": "network_name",
+            "name": "nw_name",
             "label": "Network Name",
             "type": "text",
             "required": true,
@@ -25,7 +32,7 @@
             "required": true
         },
         {
-            "name": "mnc_touse_for_handling",
+            "name": "handle_mnc",
             "label": "MNC to use for Handling",
             "type": "text",
             "required": true

@@ -13,7 +13,7 @@
     },
     "fields": [
         {
-            "name": "imsirange_name",
+            "name": "range_name",
             "label": "IMSI Range Name",
             "type": "text",
             "required": true,

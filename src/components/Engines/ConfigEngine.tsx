@@ -59,27 +59,30 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: any, initia
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
 
-    // -- Data Fetching --
-    React.useEffect(() => {
-        const fetchData = async () => {
-            if (!schema.endpoint) return;
-            setLoading(true);
-            try {
-                const response = await fetch(schema.endpoint);
-                if (response.ok) {
-                    const result = await response.json();
-                    setData(result);
-                }
-            } catch (error) {
-                console.error("Failed to fetch configuration data:", error);
-                message.error("Failed to load data from server");
-            } finally {
-                setLoading(false);
-            }
-        };
+    // Date Range state for time-aware reports
+    const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
 
-        fetchData();
-    }, [schema.endpoint]);
+    const fetchData = async () => {
+        if (!schema.endpoint) return;
+        setLoading(true);
+        try {
+            let url = schema.endpoint;
+            if (dateRange && dateRange[0] && dateRange[1]) {
+                const connector = url.includes('?') ? '&' : '?';
+                url += `${connector}from=${dateRange[0].toISOString()}&to=${dateRange[1].toISOString()}`;
+            }
+            const response = await fetch(url);
+            if (response.ok) {
+                const result = await response.json();
+                setData(result);
+            }
+        } catch (error) {
+            console.error("Failed to fetch configuration data:", error);
+            message.error("Failed to load data from server");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // -- Handlers --
 
@@ -318,9 +321,14 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: any, initia
                 title={schema.title}
                 extra={
                     <Space>
-                        <Button icon={<Icons.DownloadOutlined />} onClick={downloadCSV}>
-                            Export CSV
-                        </Button>
+                        {schema.metadataConfig?.supportsDateRange && (
+                            <DatePicker.RangePicker
+                                showTime
+                                onChange={(dates) => setDateRange(dates as any)}
+                                style={{ marginRight: 8 }}
+                            />
+                        )}
+                        <Button type="primary" onClick={exportToCSV}>Export CSV</Button>
                         {selectedRowKeys.length > 0 && (
                             <Guard permission={permissions.delete!}>
                                 <Button danger onClick={handleBulkDelete}>
@@ -329,8 +337,12 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: any, initia
                             </Guard>
                         )}
                         <Guard permission={permissions.create!}>
-                            <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
-                                Add New
+                            <Button
+                                type="primary"
+                                icon={<PlusOutlined />}
+                                onClick={handleAddNew}
+                            >
+                                Add New Record
                             </Button>
                         </Guard>
                     </Space>

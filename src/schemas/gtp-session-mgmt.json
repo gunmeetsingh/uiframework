@@ -4,46 +4,57 @@
     "permission": "gtp:session:manage",
     "dbPool": "GTP_PROXY",
     "tableName": "gtp_session_mgmt",
+    "metadataConfig": {
+        "deleteType": "soft",
+        "updatedByField": "updated_by",
+        "updatedAtField": "updated_at",
+        "lastActionField": "last_action",
+        "listFilter": "last_action != 'D' OR last_action IS NULL"
+    },
     "fields": [
         {
-            "name": "id",
-            "label": "ID",
-            "type": "number",
-            "primary": true,
-            "hidden": true
-        },
-        {
-            "name": "home_nw_mccmnc",
+            "name": "home_mccmnc",
             "label": "Home NW MCCMNC",
             "type": "text",
-            "required": true
+            "required": true,
+            "primary": true
         },
         {
-            "name": "visited_nw_mcc",
+            "name": "range_name",
+            "label": "IMSI Range Name",
+            "type": "text",
+            "required": true,
+            "primary": true
+        },
+        {
+            "name": "visit_mcc",
             "label": "Visited NW MCC",
             "type": "text",
-            "required": true
+            "required": true,
+            "primary": true
         },
         {
-            "name": "visited_nw_mccmnc",
+            "name": "visit_mccmnc",
             "label": "Visited NW MCCMNC",
             "type": "text",
-            "required": true
+            "required": true,
+            "primary": true
         },
         {
             "name": "apn",
             "label": "APN",
             "type": "text",
-            "required": true
+            "required": true,
+            "primary": true
         },
         {
-            "name": "session_handling",
+            "name": "sess_action",
             "label": "Session Handling",
             "type": "text",
             "required": true
         },
         {
-            "name": "gtp_user_bypass",
+            "name": "user_bypass",
             "label": "GTP User Bypass",
             "type": "text",
             "required": true
@@ -56,12 +67,6 @@
         {
             "name": "pgw_ips",
             "label": "PGW IPs",
-            "type": "text",
-            "required": true
-        },
-        {
-            "name": "imsirange_name",
-            "label": "IMSI Range Name",
             "type": "text",
             "required": true
         }

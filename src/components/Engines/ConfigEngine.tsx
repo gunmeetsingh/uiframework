@@ -18,6 +18,10 @@ interface FieldSchema {
     label: string;
     type: 'text' | 'number' | 'email' | 'select' | 'multi-select' | 'checkbox' | 'date';
     options?: Option[];
+    lookup?: {
+        dbPool: string;
+        query: string;
+    };
     required?: boolean;
     showInList?: boolean;
     primary?: boolean;
@@ -59,6 +63,9 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: any, initia
     const [form] = Form.useForm();
     const [loading, setLoading] = useState(false);
 
+    // Dynamic Options for dropdowns
+    const [dynamicOptions, setDynamicOptions] = useState<Record<string, Option[]>>({});
+
     // Date Range state for time-aware reports
     const [dateRange, setDateRange] = useState<[dayjs.Dayjs | null, dayjs.Dayjs | null] | null>(null);
 
@@ -88,6 +95,32 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: any, initia
         fetchData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [schema.endpoint, dateRange]);
+
+    useEffect(() => {
+        const fetchLookups = async () => {
+            const lookups = schema.fields.filter((f: any) => f.lookup);
+            for (const field of lookups) {
+                try {
+                    const response = await fetch('/api/lookup', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(field.lookup),
+                    });
+                    if (response.ok) {
+                        const result = await response.json();
+                        setDynamicOptions(prev => ({
+                            ...prev,
+                            [field.name]: result
+                        }));
+                    }
+                } catch (error) {
+                    console.error(`Failed to fetch lookup for ${field.name}:`, error);
+                }
+            }
+        };
+
+        fetchLookups();
+    }, [schema.fields]);
 
     // -- Handlers --
 
@@ -399,14 +432,14 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: any, initia
                         {field.type === 'number' && <Input type="number" disabled={field.primary && !!editingRecord} />}
                         {field.type === 'select' && (
                             <Select disabled={field.primary && !!editingRecord}>
-                                {field.options?.map((opt: any) => (
+                                {(dynamicOptions[field.name] || field.options)?.map((opt: any) => (
                                     <Select.Option key={opt.value} value={opt.value}>{opt.label}</Select.Option>
                                 ))}
                             </Select>
                         )}
                         {field.type === 'multi-select' && (
                             <Select mode="multiple" disabled={field.primary && !!editingRecord}>
-                                {field.options?.map((opt: any) => (
+                                {(dynamicOptions[field.name] || field.options)?.map((opt: any) => (
                                     <Select.Option key={opt.value} value={opt.value}>{opt.label}</Select.Option>
                                 ))}
                             </Select>

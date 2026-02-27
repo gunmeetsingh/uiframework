@@ -22,7 +22,11 @@
         {
             "name": "range_name",
             "label": "IMSI Range Name",
-            "type": "text",
+            "type": "select",
+            "lookup": {
+                "dbPool": "GTP_PROXY",
+                "query": "SELECT DISTINCT range_name as value, range_name as label FROM gtp_imsi_ranges ORDER BY range_name"
+            },
             "required": true,
             "primary": true
         },

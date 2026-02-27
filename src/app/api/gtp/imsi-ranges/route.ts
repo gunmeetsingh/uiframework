@@ -7,8 +7,8 @@ import { AuditLogger } from "@/core/utils/audit-logger";
 
 // Mock data matching the user's table structure
 let mockImsiRanges = [
-    { imsirange_name: 'Range-001', from_imsi: '405800000000001', to_imsi: '405800000000999' },
-    { imsirange_name: 'Range-002', from_imsi: '405810000000001', to_imsi: '405810000000999' }
+    { range_name: 'Range-001', from_imsi: '405800000000001', to_imsi: '405800000000999' },
+    { range_name: 'Range-002', from_imsi: '405810000000001', to_imsi: '405810000000999' }
 ];
 
 import schemaRaw from "@/schemas/gtp-imsi-range.json";
@@ -61,7 +61,7 @@ export async function POST(req: NextRequest) {
     const data = await req.json();
 
     // Validation
-    if (!data.imsirange_name || !data.from_imsi || !data.to_imsi) {
+    if (!data.range_name || !data.from_imsi || !data.to_imsi) {
         return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 

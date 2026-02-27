@@ -328,7 +328,7 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: any, initia
                                 style={{ marginRight: 8 }}
                             />
                         )}
-                        <Button type="primary" onClick={exportToCSV}>Export CSV</Button>
+                        <Button type="primary" onClick={downloadCSV}>Export CSV</Button>
                         {selectedRowKeys.length > 0 && (
                             <Guard permission={permissions.delete!}>
                                 <Button danger onClick={handleBulkDelete}>
@@ -355,7 +355,7 @@ export const ConfigEngine = ({ schema, initialData = [] }: { schema: any, initia
                     rowSelection={rowSelection}
                     columns={columns}
                     dataSource={data}
-                    rowKey={(record) => record.id || record.imsirange_name || record.network_name || record.home_nw_mccmnc || Math.random().toString()}
+                    rowKey={(record) => record.id || record.range_name || record.nw_name || record.home_mccmnc || record.imsirange_name || record.network_name || record.home_nw_mccmnc || Math.random().toString()}
                     pagination={{ pageSize: 10 }}
                     loading={loading}
                     style={{ background: 'transparent' }}
